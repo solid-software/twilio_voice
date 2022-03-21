@@ -1,5 +1,7 @@
 package com.twilio.twilio_voice;
 
+import static com.twilio.twilio_voice.Constants.SHOUT_FROM_NAME_CUSTOM_PARAMETER_KEY;
+
 import android.Manifest;
 import android.app.KeyguardManager;
 import android.app.NotificationManager;
@@ -30,6 +32,8 @@ import com.twilio.voice.Call;
 import com.twilio.voice.CallException;
 import com.twilio.voice.CallInvite;
 
+import java.util.Map;
+
 
 public class AnswerJavaActivity extends AppCompatActivity {
 
@@ -50,6 +54,7 @@ public class AnswerJavaActivity extends AppCompatActivity {
     private TextView tvCallStatus;
     private ImageView btnAnswer;
     private ImageView btnReject;
+    private String fromName;
     Call.Listener callListener = callListener();
 
     @Override
@@ -100,6 +105,20 @@ public class AnswerJavaActivity extends AppCompatActivity {
             Log.d(TAG, "handleIncomingCallIntent-");
             String action = intent.getAction();
             activeCallInvite = intent.getParcelableExtra(Constants.INCOMING_CALL_INVITE);
+            if (activeCallInvite != null) {
+                Log.d(TAG, "------------------------------");
+                Log.d(TAG, "From:" + activeCallInvite.getFrom());
+                Map<String, String> customParameters = activeCallInvite.getCustomParameters();
+                for (String key : customParameters.keySet()) {
+                    Log.d(TAG, "Key= " + key + " Value=" + customParameters.get(key));
+                }
+            }
+            Map<String, String> customParameters = null;
+            if (activeCallInvite != null) {
+                customParameters = activeCallInvite.getCustomParameters();
+            }
+            TwilioCustomParameters twilioCustomParameters = new TwilioCustomParameters(getApplicationContext(), customParameters);
+            fromName = twilioCustomParameters.getFromName();
             activeCallNotificationId = intent.getIntExtra(Constants.INCOMING_CALL_NOTIFICATION_ID, 0);
             tvCallStatus.setText(R.string.incoming_call_title);
             Log.d(TAG, action);
@@ -150,12 +169,7 @@ public class AnswerJavaActivity extends AppCompatActivity {
     private void configCallUI() {
         Log.d(TAG, "configCallUI");
         if (activeCallInvite != null) {
-
-            String fromId = activeCallInvite.getFrom().replace("client:", "");
-            SharedPreferences preferences = getApplicationContext().getSharedPreferences(TwilioPreferences, Context.MODE_PRIVATE);
-            String caller = preferences.getString(fromId, preferences.getString("defaultCaller", getString(R.string.unknown_caller)));
-            tvUserName.setText(caller);
-
+            tvUserName.setText(fromName);
             btnAnswer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

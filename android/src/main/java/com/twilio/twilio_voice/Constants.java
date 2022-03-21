@@ -1,6 +1,7 @@
 package com.twilio.twilio_voice;
 
 public class Constants {
+    public static final String SHOUT_FROM_NAME_CUSTOM_PARAMETER_KEY = "shout_fromName";
 
     public static final String CALL_SID_KEY = "CALL_SID";
     public static final String VOICE_CHANNEL_LOW_IMPORTANCE = "notification-channel-low-importance";

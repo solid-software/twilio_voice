@@ -1,5 +1,7 @@
 package com.twilio.twilio_voice;
 
+import static com.twilio.twilio_voice.Constants.SHOUT_FROM_NAME_CUSTOM_PARAMETER_KEY;
+
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -24,6 +26,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.twilio.voice.CallInvite;
 import com.twilio.voice.CancelledCallInvite;
+
+import java.util.Map;
 
 public class IncomingCallNotificationService extends Service {
 
@@ -86,7 +90,12 @@ public class IncomingCallNotificationService extends Service {
         SharedPreferences preferences = context.getSharedPreferences(TwilioPreferences, Context.MODE_PRIVATE);
         Log.i(TAG, "Setting notification from, " + callInvite.getFrom());
         String fromId = callInvite.getFrom().replace("client:", "");
-        String caller = preferences.getString(fromId, preferences.getString("defaultCaller", "Unknown caller"));
+
+        Map<String, String> customParameters = callInvite.getCustomParameters();
+        TwilioCustomParameters twilioCustomParameters = new TwilioCustomParameters(getApplicationContext(), customParameters);
+        String fromName = twilioCustomParameters.getFromName();
+
+        String caller = preferences.getString(fromId, preferences.getString("defaultCaller", fromName));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Log.i(TAG, "building notification for new phones");
@@ -237,7 +246,7 @@ public class IncomingCallNotificationService extends Service {
         SharedPreferences preferences = getApplicationContext().getSharedPreferences(TwilioPreferences, Context.MODE_PRIVATE);
         boolean prefsShow = preferences.getBoolean("show-notifications", true);
         if (prefsShow) {
-            buildMissedCallNotification(cancelledCallInvite.getFrom(), cancelledCallInvite.getTo());
+            buildMissedCallNotification(cancelledCallInvite.getFrom(), cancelledCallInvite);
         }
         endForeground();
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
@@ -252,18 +261,23 @@ public class IncomingCallNotificationService extends Service {
     }
 
 
-    private void buildMissedCallNotification(String callerId, String to) {
+    private void buildMissedCallNotification(String callerId, CancelledCallInvite callInvite) {
 
         String fromId = callerId.replace("client:", "");
         Context context = getApplicationContext();
         SharedPreferences preferences = context.getSharedPreferences(TwilioPreferences, Context.MODE_PRIVATE);
-        String callerName = preferences.getString(fromId, preferences.getString("defaultCaller", "Unknown caller"));
+        Map<String, String> customParameters = callInvite.getCustomParameters();
+        TwilioCustomParameters twilioCustomParameters = new TwilioCustomParameters(getApplicationContext(), customParameters);
+        String fromName = twilioCustomParameters.getFromName();
+
+        String callerName = preferences.getString(fromId, preferences.getString("defaultCaller", fromName));
+
         String title = getString(R.string.notification_missed_call, callerName);
 
 
         Intent returnCallIntent = new Intent(getApplicationContext(), IncomingCallNotificationService.class);
         returnCallIntent.setAction(Constants.ACTION_RETURN_CALL);
-        returnCallIntent.putExtra(Constants.CALL_TO, to);
+        returnCallIntent.putExtra(Constants.CALL_TO, callInvite.getTo());
         returnCallIntent.putExtra(Constants.CALL_FROM, callerId);
         PendingIntent piReturnCallIntent = PendingIntent.getService(getApplicationContext(), 0, returnCallIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
