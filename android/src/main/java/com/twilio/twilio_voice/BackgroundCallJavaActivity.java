@@ -52,6 +52,7 @@ public class BackgroundCallJavaActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_background_call);
+        getSupportActionBar().hide();
         powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
 
         tvUserName = (TextView) findViewById(R.id.tvUserName);
@@ -106,7 +107,7 @@ public class BackgroundCallJavaActivity extends AppCompatActivity {
                 Log.d(TAG, fromName);
 
                 tvUserName.setText(fromName);
-                tvCallStatus.setText("Conectado");
+                tvCallStatus.setText(R.string.incoming_call_title);
                 Log.d(TAG, "handleCallIntent-");
                 configCallUI();
             }else{
