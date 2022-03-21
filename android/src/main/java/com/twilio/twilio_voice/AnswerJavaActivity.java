@@ -125,7 +125,7 @@ public class AnswerJavaActivity extends AppCompatActivity {
             switch (action) {
                 case Constants.ACTION_INCOMING_CALL:
                 case Constants.ACTION_INCOMING_CALL_NOTIFICATION:
-                    configCallUI();
+                    configCallUI(fromName);
                     break;
                 case Constants.ACTION_CANCEL_CALL:
                     newCancelCallClickListener();
@@ -166,7 +166,7 @@ public class AnswerJavaActivity extends AppCompatActivity {
     }
 
 
-    private void configCallUI() {
+    private void configCallUI(String fromName) {
         Log.d(TAG, "configCallUI");
         if (activeCallInvite != null) {
             tvUserName.setText(fromName);
@@ -224,6 +224,7 @@ public class AnswerJavaActivity extends AppCompatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(Constants.CALL_FROM, call.getFrom());
+        intent.putExtra(Constants.CALL_FROM_NAME, fromName);
         startActivity(intent);
         Log.d(TAG, "Connected");
     }

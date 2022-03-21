@@ -8,6 +8,7 @@ public class Constants {
     public static final String VOICE_CHANNEL_HIGH_IMPORTANCE = "notification-channel-high-importance";
     public static final String INCOMING_CALL_INVITE = "INCOMING_CALL_INVITE";
     public static final String CALL_FROM = "CALL_FROM";
+    public static final String CALL_FROM_NAME = "CALL_FROM_NAME";
     public static final String CALL_TO = "CALL_TO";
     public static final String CANCELLED_CALL_INVITE = "CANCELLED_CALL_INVITE";
     public static final String ACCEPT_CALL_ORIGIN = "ACCEPT_CALL_ORIGIN";

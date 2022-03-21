@@ -96,14 +96,16 @@ public class BackgroundCallJavaActivity extends AppCompatActivity {
             if (intent.getStringExtra(Constants.CALL_FROM) != null) {
                 activateSensor();
                 String fromId = intent.getStringExtra(Constants.CALL_FROM).replace("client:", "");
-
+                String fromName = intent.getStringExtra(Constants.CALL_FROM_NAME);
                 SharedPreferences preferences = getApplicationContext().getSharedPreferences(TwilioPreferences, Context.MODE_PRIVATE);
+
                 String caller = preferences.getString(fromId, preferences.getString("defaultCaller", "Desconocido"));
                 Log.d(TAG, "handleCallIntent");
                 Log.d(TAG, "caller from");
                 Log.d(TAG, caller);
+                Log.d(TAG, fromName);
 
-                tvUserName.setText(caller);
+                tvUserName.setText(fromName);
                 tvCallStatus.setText("Conectado");
                 Log.d(TAG, "handleCallIntent-");
                 configCallUI();
