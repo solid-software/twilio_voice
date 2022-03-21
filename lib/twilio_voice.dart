@@ -156,7 +156,7 @@ class TwilioVoice {
       return CallEvent.ringing;
     } else if (state.startsWith("Answer")) {
       call._activeCall =
-          createCallFromState(state, callDirection: CallDirection.incoming);
+          createIcomingCallFromAnswerState(state, callDirection: CallDirection.incoming);
       print(
           'Answer - From: ${call._activeCall!.from}, To: ${call._activeCall!.to}, Direction: ${call._activeCall!.callDirection}');
 
@@ -213,10 +213,48 @@ ActiveCall createCallFromState(String state,
       customParams: parseCustomParams(tokens));
 }
 
+ActiveCall createCallFromAnswerState(String state,
+    {CallDirection? callDirection, bool initiated = false}) {
+  List<String> tokens = state.split('|');
+  return ActiveCall(
+      from: tokens[1],
+      to: tokens[2],
+      initiated: initiated ? DateTime.now() : null,
+      callDirection: callDirection ??
+          ("Incoming" == tokens[3]
+              ? CallDirection.incoming
+              : CallDirection.outgoing),
+      customParams: parseCustomParams(tokens));
+}
+
 Map<String, dynamic>? parseCustomParams(List<String> tokens) {
   if (tokens.length != 5) return null;
   try {
     Map<String, dynamic> customValue = jsonDecode(tokens[4]);
+    return customValue;
+  } catch (error) {
+    return null;
+  }
+}
+
+ActiveCall createIcomingCallFromAnswerState(String state,
+    {CallDirection? callDirection, bool initiated = false}) {
+  List<String> tokens = state.split('|');
+  return ActiveCall(
+      from: tokens[1],
+      to: tokens[2],
+      initiated: initiated ? DateTime.now() : null,
+      callDirection: callDirection ??
+          ("Incoming" == tokens[3]
+              ? CallDirection.incoming
+              : CallDirection.outgoing),
+      customParams: parseIncomingCustomParams(tokens));
+}
+
+Map<String, dynamic>? parseIncomingCustomParams(List<String> tokens) {
+  if (tokens.length != 4) return null;
+  try {
+    Map<String, dynamic> customValue = jsonDecode(tokens[3]);
     return customValue;
   } catch (error) {
     return null;
