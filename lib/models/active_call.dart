@@ -17,8 +17,8 @@ class ActiveCall {
     required String to,
     this.initiated,
     required this.callDirection,
-    this.customParams
-  })   : this.to = to.replaceAll("client:", ""),
+    this.customParams,
+  })  : this.to = to.replaceAll("client:", ""),
         this.from = from.replaceAll("client:", ""),
         toFormatted = _prettyPrintNumber(to),
         fromFormatted = _prettyPrintNumber(from);
@@ -30,6 +30,10 @@ class ActiveCall {
     if (phoneNumber.substring(0, 1) == '+') {
       phoneNumber = phoneNumber.substring(1);
     }
+    if (phoneNumber.startsWith('61') && phoneNumber.length == 11) {
+      return '+${phoneNumber.substring(0, 2)} ${phoneNumber.substring(2, 3)} ${phoneNumber.substring(3, 7)} ${phoneNumber.substring(7)}';
+    }
+
     if (phoneNumber.length == 7) {
       return phoneNumber.substring(0, 3) + "-" + phoneNumber.substring(3);
     }
