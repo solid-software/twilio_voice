@@ -409,10 +409,12 @@ public class SwiftTwilioVoicePlugin: NSObject, FlutterPlugin,  FlutterStreamHand
                 self.sendPhoneCallEvents(description: "LOG|Successfully unregistered from VoIP push notifications.", isError: false)
             }
         }
-        UserDefaults.standard.removeObject(forKey: kCachedDeviceToken)
+        
+        //Illia: I commented this out as it makes deviceToken Data object nil and next setToken registration is not working as it checks for it.
+        //UserDefaults.standard.removeObject(forKey: kCachedDeviceToken)
         
         // Remove the cached binding as credentials are invalidated
-        UserDefaults.standard.removeObject(forKey: kCachedBindingDate)
+        //UserDefaults.standard.removeObject(forKey: kCachedBindingDate)
     }
     
     /**
