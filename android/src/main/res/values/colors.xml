@@ -13,4 +13,6 @@
     <color name="grayHeaderItem">#F1F2F3</color>
     <color name="colorGrayBlur">#8c939393</color>
 
+    <color name="red">#FFEF4444</color>
+    <color name="green">#FF10B981</color>
 </resources>

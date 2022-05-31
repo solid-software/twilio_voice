@@ -34,7 +34,6 @@ import com.twilio.voice.CallInvite;
 
 import java.util.Map;
 
-
 public class AnswerJavaActivity extends AppCompatActivity {
 
     private static String TAG = "AnswerActivity";
@@ -85,14 +84,13 @@ public class AnswerJavaActivity extends AppCompatActivity {
             } else {
                 PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
                 wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, TAG);
-                wakeLock.acquire(60 * 1000L /*10 minutes*/);
+                wakeLock.acquire(60 * 1000L /* 10 minutes */);
 
                 getWindow().addFlags(
                         WindowManager.LayoutParams.FLAG_FULLSCREEN |
                                 WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
                                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-                );
+                                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
             }
 
         }
@@ -117,7 +115,8 @@ public class AnswerJavaActivity extends AppCompatActivity {
             if (activeCallInvite != null) {
                 customParameters = activeCallInvite.getCustomParameters();
             }
-            TwilioCustomParameters twilioCustomParameters = new TwilioCustomParameters(getApplicationContext(), customParameters);
+            TwilioCustomParameters twilioCustomParameters = new TwilioCustomParameters(getApplicationContext(),
+                    customParameters);
             fromName = twilioCustomParameters.getFromName();
             activeCallNotificationId = intent.getIntExtra(Constants.INCOMING_CALL_NOTIFICATION_ID, 0);
             tvCallStatus.setText(R.string.incoming_call_title);
@@ -165,7 +164,6 @@ public class AnswerJavaActivity extends AppCompatActivity {
         }
     }
 
-
     private void configCallUI(String fromName) {
         Log.d(TAG, "configCallUI");
         if (activeCallInvite != null) {
@@ -198,7 +196,6 @@ public class AnswerJavaActivity extends AppCompatActivity {
         }
     }
 
-
     private void acceptCall() {
         Log.d(TAG, "Accepting call");
         Intent acceptIntent = new Intent(this, IncomingCallNotificationService.class);
@@ -220,11 +217,17 @@ public class AnswerJavaActivity extends AppCompatActivity {
     }
 
     private void startAnswerActivity(Call call) {
-        Intent intent = new Intent(this, BackgroundCallJavaActivity.class);
+        Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
+        if (intent != null) {
+            intent.setAction(Intent.ACTION_DIAL);
+        }
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(Constants.CALL_FROM, call.getFrom());
-        intent.putExtra(Constants.CALL_FROM_NAME, fromName);
+        intent.putExtra("FROM_NAME", call.getFrom());
+        intent.setAction(Constants.ACTION_ACCEPT);
+        TwilioVoicePlugin.activeCall = call;
+
         startActivity(intent);
         Log.d(TAG, "Connected");
     }
@@ -249,7 +252,6 @@ public class AnswerJavaActivity extends AppCompatActivity {
     private Call.Listener callListener() {
         return new Call.Listener() {
 
-
             @Override
             public void onConnectFailure(@NonNull Call call, @NonNull CallException error) {
                 Log.d(TAG, "Connect failure");
@@ -258,11 +260,14 @@ public class AnswerJavaActivity extends AppCompatActivity {
 
             @Override
             public void onRinging(@NonNull Call call) {
-
+                Log.d(TAG, "onRinging");
+                activeCall = call;
+                // startAnswerActivity(call);
             }
 
             @Override
             public void onConnected(@NonNull Call call) {
+                Log.d(TAG, "onConnected");
                 activeCall = call;
                 startAnswerActivity(call);
             }
@@ -270,11 +275,13 @@ public class AnswerJavaActivity extends AppCompatActivity {
             @Override
             public void onReconnecting(@NonNull Call call, @NonNull CallException callException) {
                 Log.d(TAG, "onReconnecting");
+                activeCall = call;
             }
 
             @Override
             public void onReconnected(@NonNull Call call) {
                 Log.d(TAG, "onReconnected");
+                activeCall = call;
             }
 
             @Override
@@ -334,7 +341,6 @@ public class AnswerJavaActivity extends AppCompatActivity {
         }
     }
 
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -342,11 +348,11 @@ public class AnswerJavaActivity extends AppCompatActivity {
     }
 
     // We still want to listen messages from backgroundCallJavaActivity
-//    @Override
-//    protected void onPause() {
-//        super.onPause();
-//        unregisterReceiver();
-//    }
+    // @Override
+    // protected void onPause() {
+    // super.onPause();
+    // unregisterReceiver();
+    // }
 
     private void newCancelCallClickListener() {
         finish();
@@ -369,25 +375,29 @@ public class AnswerJavaActivity extends AppCompatActivity {
     }
 
     private void requestAudioPermissions() {
-        String[] permissions = {Manifest.permission.RECORD_AUDIO};
+        String[] permissions = { Manifest.permission.RECORD_AUDIO };
         Log.d(TAG, "requestAudioPermissions");
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO)) {
                 ActivityCompat.requestPermissions(this, permissions, MIC_PERMISSION_REQUEST_CODE);
             } else {
                 ActivityCompat.requestPermissions(this, permissions, MIC_PERMISSION_REQUEST_CODE);
             }
-        } else if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+        } else if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "requestAudioPermissions-> permission granted->newAnswerCallClickListener");
             acceptCall();
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
         if (requestCode == MIC_PERMISSION_REQUEST_CODE) {
             if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Microphone permissions needed. Please allow in your application settings.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Microphone permissions needed. Please allow in your application settings.",
+                        Toast.LENGTH_LONG).show();
                 rejectCallClickListener();
             } else {
                 acceptCall();
@@ -400,7 +410,7 @@ public class AnswerJavaActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         Log.d(TAG, "AnserJAvaActivity ondestroy");
-//        unregisterReceiver();
+        // unregisterReceiver();
         super.onDestroy();
         if (wakeLock != null) {
             wakeLock.release();
